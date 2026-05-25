@@ -12,7 +12,7 @@
 
     "validate_scan_output": true,
     "scan_output": {
-      "security_scan_report_conclusion": "success",
+      "_security_scan_report_conclusion": "success",
       "total_libs_scanned": {"gte": 7},
       "expected_messages": []
     },
