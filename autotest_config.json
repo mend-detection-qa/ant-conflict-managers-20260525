@@ -1,9 +1,10 @@
 {
-  "_comment": "Autotest config for ant-conflict-managers-20260525. Three Ant+Ivy sub-projects exercising per-module strict override (catalog E1), global strict conflict manager (#15), and global latest-compatible conflict manager (#16). Detection signals: (1) commons-logging:1.2 emitted with the per-module strict override active; (2) commons-lang3 strict-failure in global-strict sub-project; (3) commons-io:2.11.0 (not 2.22.0) in latest-compatible sub-project. Bucket A — java pinned to 17 in .whitesource. Ant has no EUA support; vulnerability analysis absent for all deps.",
+  "_comment": "Autotest config for ant-conflict-managers-20260525 — Mode-3 path-scan probe (post-pivot). The bolt-4 SCM scanner does NOT do Ivy resolution; it path-scans for binary artifacts. We pre-resolved and committed 10 JARs across three sub-projects (per-module-override/, global-strict/, global-latest-compatible/) so the scanner has something to fingerprint. Assertions target Mode-3 reality: flat list of JAR filenames as artifactIds, SHA1 fingerprints as the regression signal. Original conflict-manager semantics are exercised at lib-population time, not detected at scan time.",
   "_probe_id": "ant-conflict-managers-20260525-134952",
   "_coverage_plan": "COVERAGE-PLAN.md Project #1 (P0) — first Ant probe, seeds the Ant test surface",
   "_catalog_ids": ["E1", "#15", "#16", "#21"],
-  "_warnings_follow_up": "The expected-tree.json carries warnings[] entries for strict-failure and latest-compatible-divergence (per-module-override, global-strict, global-latest-compatible). The autotest framework does not currently support asserting on warnings[] content. If regression detection for E1/#15/#16 via expected_dependency_pairs (commons-logging:1.2, commons-io:2.11.0) is insufficient, add a framework-level warnings validator as a follow-up.",
+  "_scanner_mode": "mode-3-default-path-scan",
+  "_mode_note": "Mode-1 Ivy resolution is not supported by bolt-4 SCM scanner. For Mode-1 testing, use pipeline-mode `mend ua` against the same repo.",
   "description": "Autotest configuration file for dependency tree detection validation",
   "version": 1.8,
   "base_config": {
@@ -12,7 +13,7 @@
     "validate_scan_output": true,
     "scan_output": {
       "security_scan_report_conclusion": "success",
-      "total_libs_scanned": {"gte": 15},
+      "total_libs_scanned": {"gte": 7},
       "expected_messages": []
     },
 
@@ -22,36 +23,24 @@
       "check_update_request_sca_results": true,
       "check_system_paths": false,
 
-      "expected_total_dependencies_number": {"gte": 16},
-      "expected_direct_dependencies_number": {"gte": 6},
-      "expected_transitive_dependencies_number": {"gte": 8},
+      "expected_total_dependencies_number": {"gte": 7},
+      "expected_direct_dependencies_number": {"gte": 7},
+      "expected_transitive_dependencies_number": {"gte": 0},
 
       "direct_dependencies_names_list": {
-        "eq": [
-          "httpclient",
-          "commons-beanutils",
-          "slf4j-api",
-          "commons-lang3",
-          "junit",
-          "commons-io",
-          "guava"
+        "contains": [
+          "commons-logging-1.2.jar",
+          "commons-lang3-3.12.0.jar",
+          "commons-io-2.11.0.jar",
+          "httpclient-4.5.14.jar",
+          "httpcore-4.4.16.jar",
+          "commons-codec-1.11.jar",
+          "junit-4.13.2.jar"
         ]
       },
 
       "transitive_dependencies_names_list": {
-        "contains": [
-          "commons-logging",
-          "httpcore",
-          "commons-codec",
-          "commons-collections",
-          "hamcrest-core",
-          "failureaccess",
-          "listenablefuture",
-          "jsr305",
-          "checker-qual",
-          "error_prone_annotations",
-          "j2objc-annotations"
-        ]
+        "contains": []
       },
 
       "expected_package_managers": {
@@ -60,31 +49,27 @@
 
       "expected_dependency_pairs": [
         {
-          "artifactId": "commons-logging",
+          "artifactId": "commons-logging-1.2.jar",
           "version": "1.2",
-          "groupId": "commons-logging",
-          "_note": "Regression signal E1: per-module strict override must select 1.2 over 1.1.1"
+          "_note": "Regression signal E1: per-module-override/lib/ holds the strict-winner 1.2 (not 1.1.1)"
         },
         {
-          "artifactId": "commons-io",
+          "artifactId": "commons-io-2.11.0.jar",
           "version": "2.11.0",
-          "groupId": "commons-io",
-          "_note": "Regression signal #16: latest-compatible must pick 2.11.0; latest-revision would pick 2.22.0"
+          "_note": "Regression signal #16: global-latest-compatible/lib/ holds 2.11.0 (not the latest-revision 2.22.0)"
         },
         {
-          "artifactId": "httpcore",
-          "version": "4.4.16",
-          "groupId": "org.apache.httpcomponents"
+          "artifactId": "commons-lang3-3.12.0.jar",
+          "version": "3.12.0",
+          "_note": "Stable baseline JAR from global-strict/lib/"
         },
         {
-          "artifactId": "commons-codec",
-          "version": "1.15",
-          "groupId": "commons-codec"
+          "artifactId": "httpclient-4.5.14.jar",
+          "version": "4.5.14"
         },
         {
-          "artifactId": "hamcrest-core",
-          "version": "1.3",
-          "groupId": "org.hamcrest"
+          "artifactId": "junit-4.13.2.jar",
+          "version": "4.13.2"
         }
       ],
 
@@ -92,13 +77,25 @@
       "expected_agent_version": "",
       "expected_plugin_version": "",
       "validate_mend_tags": false,
-      "validate_checksums": false,
+
+      "validate_checksums": true,
       "checksums_config": {
-        "check_sha1_not_empty": false,
-        "check_sha1_format": false,
-        "check_sha1_consistency": false,
+        "check_sha1_not_empty": true,
+        "check_sha1_format": true,
+        "check_sha1_consistency": true,
         "check_checksums_by_formula": false,
-        "expected_dependency_checksums": []
+        "expected_dependency_checksums": [
+          {"artifactId": "commons-logging-1.2.jar", "version": "1.2", "sha1": "4bfc12adfe4842bf07b657f0369c4cb522955686"},
+          {"artifactId": "commons-io-2.11.0.jar", "version": "2.11.0", "sha1": "a2503f302b11ebde7ebc3df41daebe0e4eea3689"},
+          {"artifactId": "commons-lang3-3.12.0.jar", "version": "3.12.0", "sha1": "c6842c86792ff03b9f1d1fe2aab8dc23aa6c6f0e"},
+          {"artifactId": "httpclient-4.5.14.jar", "version": "4.5.14", "sha1": "1194890e6f56ec29177673f2f12d0b8e627dec98"},
+          {"artifactId": "httpcore-4.4.16.jar", "version": "4.4.16", "sha1": "51cf043c87253c9f58b539c9f7e44c8894223850"},
+          {"artifactId": "commons-codec-1.11.jar", "version": "1.11", "sha1": "3acb4705652e16236558f0f4f2192cc33c3bd189"},
+          {"artifactId": "commons-beanutils-1.8.3.jar", "version": "1.8.3", "sha1": "686ef3410bcf4ab8ce7fd0b899e832aaba5facf7"},
+          {"artifactId": "junit-4.13.2.jar", "version": "4.13.2", "sha1": "8ac9e16d933b6fb43bc7f576336b8f4d7eb5ba12"},
+          {"artifactId": "hamcrest-core-1.3.jar", "version": "1.3", "sha1": "42a25dc3219429f0e5d060061f71acb49bf010a0"},
+          {"artifactId": "slf4j-api-1.7.36.jar", "version": "1.7.36", "sha1": "6c62681a2f655b49963a5983b8b0950a6120ae14"}
+        ]
       }
     },
 

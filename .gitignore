@@ -7,7 +7,10 @@ ivy2-cache/
 # Ant build output
 build/
 dist/
-lib/
+
+# NOTE: lib/ is normally ignored (Ivy resolves into it).
+# This probe pivots to Mode-3 path scanning so curated JARs are
+# committed under each sub-project's lib/. Do NOT add lib/ here.
 
 # Ivy resolution reports
 */ivy-*.xml
