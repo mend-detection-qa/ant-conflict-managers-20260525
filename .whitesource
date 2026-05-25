@@ -1,7 +1,7 @@
 {
   "scanSettings": {
     "versioning": {
-      "java": "17"
+       "java": "17.0.19+10"
     }
   }
 }
