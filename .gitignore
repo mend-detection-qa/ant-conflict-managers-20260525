@@ -1,0 +1,18 @@
+# Ivy resolution cache
+.ivy2/
+ivy-cache/
+ivy2-cache/
+~/.ivy2/
+
+# Ant build output
+build/
+dist/
+lib/
+
+# Ivy resolution reports
+*/ivy-*.xml
+*/resolution-cache/
+
+# OS metadata
+.DS_Store
+Thumbs.db

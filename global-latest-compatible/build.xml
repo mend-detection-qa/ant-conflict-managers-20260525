@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  build.xml for global-latest-compatible sub-project.
+
+  Expected outcome: Ivy resolves commons-io to 2.11.0 (not 2.22.0).
+  failonerror="true" here — latest-compatible does NOT fail on this
+  conflict; it resolves to a compatible version. The probe exercises
+  the CORRECT resolution behaviour, not a failure case.
+
+  If Mend falls back to latest-revision logic internally, it will report
+  commons-io:2.22.0 instead of 2.11.0. The expected-tree.json pinning
+  2.11.0 will catch this regression in the downstream comparator.
+-->
+<project name="global-latest-compatible" default="resolve" basedir="."
+         xmlns:ivy="antlib:org.apache.ivy.ant">
+
+    <property name="ivy.settings.file" value="${basedir}/ivysettings.xml"/>
+
+    <taskdef resource="org/apache/ivy/ant/antlib.xml"
+             uri="antlib:org.apache.ivy.ant"
+             classpath="${ivy.jar.path}"/>
+
+    <target name="resolve" description="Resolve dependencies via Ivy">
+        <ivy:settings file="${ivy.settings.file}"/>
+        <ivy:resolve file="${basedir}/ivy.xml"
+                     conf="compile,runtime"
+                     failonerror="true"
+                     log="download-only"/>
+        <ivy:cachepath pathid="compile.classpath"
+                       conf="compile"
+                       failonerror="false"/>
+        <ivy:cachepath pathid="runtime.classpath"
+                       conf="runtime"
+                       failonerror="false"/>
+    </target>
+
+</project>

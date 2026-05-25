@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ivysettings.xml for per-module-override sub-project.
+
+  Pattern: ivy-conflict-manager-mismatch (E1)
+
+  Default conflict manager: latest-revision (Ivy default — picks highest version
+  among all requested revisions for any given module).
+
+  Per-module override: strict conflict manager applied to commons-logging.
+  With strict, any request for two different versions of the same module causes
+  a ConflictManager failure rather than silently picking the winner. This fires
+  because httpclient:4.5.14 pulls commons-logging:1.2 and commons-beanutils:1.8.3
+  pulls commons-logging:1.1.1, creating a two-version conflict on that module.
+
+  Mend failure mode to detect: Mend's UA may assume the global latest-revision
+  manager and pick commons-logging:1.2 silently, missing the strict failure
+  entirely. The expected-tree.json encodes the strict warning so the downstream
+  comparator can detect this regression.
+-->
+<ivysettings>
+    <settings defaultConflictManager="latest-revision"/>
+
+    <conflict-managers>
+        <!-- strict fires on any commons-logging version conflict -->
+        <strict-conflict-manager name="strict-commons-logging"/>
+    </conflict-managers>
+
+    <modules>
+        <!-- Apply the strict conflict manager to commons-logging only -->
+        <module organisation="commons-logging" name="commons-logging"
+                conflict-manager="strict-commons-logging"/>
+    </modules>
+
+    <resolvers>
+        <ibiblio name="central" m2compatible="true"/>
+    </resolvers>
+</ivysettings>

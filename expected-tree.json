@@ -1,0 +1,249 @@
+{
+  "_schema_version": "1.0",
+  "_probe_id": "ant-conflict-managers-20260525-134952",
+  "_pm": "ant",
+  "_pm_version_tested": "ivy-2.5.x",
+  "_patterns": [
+    "ivy-conflict-manager-mismatch",
+    "conflict-manager-strict",
+    "conflict-manager-latest-compatible",
+    "complex-version-conflict"
+  ],
+  "_catalog_ids": ["E1", "#15", "#16", "#21"],
+  "_generated": "2026-05-25",
+
+  "subprojects": [
+    {
+      "path": "per-module-override",
+      "description": "Per-module strict conflict manager on commons-logging; latest-revision default elsewhere",
+      "catalog_pattern": "ivy-conflict-manager-mismatch",
+      "catalog_id": "E1",
+      "conflict_manager": {
+        "default": "latest-revision",
+        "per_module": [
+          {
+            "organisation": "commons-logging",
+            "name": "commons-logging",
+            "conflict_manager": "strict"
+          }
+        ]
+      },
+      "expected_direct_dependencies": [
+        {
+          "groupId": "org.apache.httpcomponents",
+          "artifactId": "httpclient",
+          "version": "4.5.14",
+          "conf": "compile",
+          "source": "registry"
+        },
+        {
+          "groupId": "commons-beanutils",
+          "artifactId": "commons-beanutils",
+          "version": "1.8.3",
+          "conf": "compile",
+          "source": "registry"
+        }
+      ],
+      "expected_transitive_dependencies": [
+        {
+          "groupId": "commons-logging",
+          "artifactId": "commons-logging",
+          "version": "1.2",
+          "source": "registry",
+          "conflict_note": "strict fires — also requested at 1.1.1 via commons-beanutils; latest-revision tentative winner is 1.2"
+        },
+        {
+          "groupId": "org.apache.httpcomponents",
+          "artifactId": "httpcore",
+          "version": "4.4.16",
+          "source": "registry"
+        },
+        {
+          "groupId": "commons-codec",
+          "artifactId": "commons-codec",
+          "version": "1.15",
+          "source": "registry"
+        },
+        {
+          "groupId": "commons-collections",
+          "artifactId": "commons-collections",
+          "version": "3.2.2",
+          "source": "registry"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "conflict_manager_strict_failure",
+          "module": "commons-logging:commons-logging",
+          "requested_versions": ["1.2", "1.1.1"],
+          "requestors": [
+            "org.apache.httpcomponents:httpclient:4.5.14 -> 1.2",
+            "commons-beanutils:commons-beanutils:1.8.3 -> 1.1.1"
+          ],
+          "tentative_winner": "1.2",
+          "mend_regression_signal": "If Mend emits commons-logging:1.2 with NO warning entry, it has assumed latest-revision globally and ignored the per-module strict override. Flag as regression against E1."
+        }
+      ]
+    },
+
+    {
+      "path": "global-strict",
+      "description": "Global strict conflict manager; two fixed versions of commons-lang3 cause a strict failure",
+      "catalog_pattern": "conflict-manager-strict",
+      "catalog_id": "#15",
+      "conflict_manager": {
+        "default": "strict"
+      },
+      "expected_direct_dependencies": [
+        {
+          "groupId": "org.slf4j",
+          "artifactId": "slf4j-api",
+          "version": "2.0.16",
+          "conf": "compile",
+          "source": "registry"
+        },
+        {
+          "groupId": "org.apache.commons",
+          "artifactId": "commons-lang3",
+          "version": "3.12.0",
+          "conf": "compile",
+          "source": "registry",
+          "conflict_note": "Version A — strict fires because test conf also requests 3.4"
+        },
+        {
+          "groupId": "org.apache.commons",
+          "artifactId": "commons-lang3",
+          "version": "3.4",
+          "conf": "test",
+          "source": "registry",
+          "conflict_note": "Version B — triggers strict failure with compile conf's 3.12.0"
+        },
+        {
+          "groupId": "junit",
+          "artifactId": "junit",
+          "version": "4.13.2",
+          "conf": "test",
+          "source": "registry"
+        }
+      ],
+      "expected_transitive_dependencies": [
+        {
+          "groupId": "org.hamcrest",
+          "artifactId": "hamcrest-core",
+          "version": "1.3",
+          "source": "registry",
+          "note": "transitive dep of junit:4.13.2"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "conflict_manager_strict_failure",
+          "module": "org.apache.commons:commons-lang3",
+          "requested_versions": ["3.12.0", "3.4"],
+          "requestors": [
+            "mend-detection-qa:global-strict:1.0.0 (compile conf) -> 3.12.0",
+            "mend-detection-qa:global-strict:1.0.0 (test conf) -> 3.4"
+          ],
+          "tentative_winner": null,
+          "mend_regression_signal": "If Mend emits commons-lang3:3.12.0 with NO warning entry, it has used latest-revision logic internally and ignored defaultConflictManager=strict. Flag as regression against #15 and #21."
+        }
+      ]
+    },
+
+    {
+      "path": "global-latest-compatible",
+      "description": "Global latest-compatible conflict manager; commons-io range constraints produce a different winner than latest-revision",
+      "catalog_pattern": "conflict-manager-latest-compatible",
+      "catalog_id": "#16",
+      "conflict_manager": {
+        "default": "latest-compatible"
+      },
+      "commons_io_version_comparison": {
+        "constraint_a": "[2.6,2.12)",
+        "constraint_b": "[2.0,)",
+        "latest_revision_winner": "2.22.0",
+        "latest_compatible_winner": "2.11.0",
+        "explanation": "latest-compatible picks the highest version satisfying ALL constraints simultaneously. 2.22.0 violates [2.6,2.12). The highest version in [2.6,2.12) that also satisfies [2.0,) is 2.11.0."
+      },
+      "expected_direct_dependencies": [
+        {
+          "groupId": "commons-io",
+          "artifactId": "commons-io",
+          "version": "2.11.0",
+          "conf": "compile,runtime",
+          "source": "registry",
+          "conflict_note": "latest-compatible winner; latest-revision would pick 2.22.0"
+        },
+        {
+          "groupId": "com.google.guava",
+          "artifactId": "guava",
+          "version": "33.3.1-jre",
+          "conf": "compile",
+          "source": "registry"
+        }
+      ],
+      "expected_transitive_dependencies": [
+        {
+          "groupId": "com.google.guava",
+          "artifactId": "failureaccess",
+          "version": "1.0.2",
+          "source": "registry",
+          "note": "transitive dep of guava:33.3.1-jre"
+        },
+        {
+          "groupId": "com.google.guava",
+          "artifactId": "listenablefuture",
+          "version": "9999.0-empty-to-avoid-conflict-with-guava",
+          "source": "registry",
+          "note": "transitive dep of guava:33.3.1-jre"
+        },
+        {
+          "groupId": "com.google.code.findbugs",
+          "artifactId": "jsr305",
+          "version": "3.0.2",
+          "source": "registry",
+          "note": "transitive dep of guava:33.3.1-jre"
+        },
+        {
+          "groupId": "org.checkerframework",
+          "artifactId": "checker-qual",
+          "version": "3.43.0",
+          "source": "registry",
+          "note": "transitive dep of guava:33.3.1-jre"
+        },
+        {
+          "groupId": "com.google.errorprone",
+          "artifactId": "error_prone_annotations",
+          "version": "2.28.0",
+          "source": "registry",
+          "note": "transitive dep of guava:33.3.1-jre"
+        },
+        {
+          "groupId": "com.google.j2objc",
+          "artifactId": "j2objc-annotations",
+          "version": "3.0.0",
+          "source": "registry",
+          "note": "transitive dep of guava:33.3.1-jre"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "conflict_manager_latest_compatible_divergence",
+          "module": "commons-io:commons-io",
+          "latest_revision_winner": "2.22.0",
+          "latest_compatible_winner": "2.11.0",
+          "constraints": ["[2.6,2.12)", "[2.0,)"],
+          "mend_regression_signal": "If Mend reports commons-io:2.22.0 for this sub-project, it used latest-revision logic and ignored defaultConflictManager=latest-compatible. Expected version is 2.11.0. Flag as regression against #16."
+        }
+      ]
+    }
+  ],
+
+  "_notes": {
+    "ivy_jar_classpath": "The build.xml files reference ${ivy.jar.path}. The operator running the probe must provide ivy.jar on this Ant property (e.g. via -Divy.jar.path=/path/to/ivy-2.5.2.jar). Mend's UA uses an in-process Ivy library and does NOT use the Ant classpath for resolution — this property is for standalone Ant runs only.",
+    "guava_transitives": "Guava 33.3.1-jre transitive versions listed above are best-effort approximations from the guava POM. Exact versions may vary. The downstream comparator should use gte/contains operators for transitive counts, not eq.",
+    "mend_bucket": "Bucket A — java pinned to 17 in .whitesource. Ant version not pinnable via install-tool.",
+    "ant_ivy_mode": "Mode 1 (IvyDependenciesAntTask). All three sub-projects have ivy.xml + ivysettings.xml.",
+    "no_eua": "Ant has no EUA support per UA resolver docs. Impact analysis will be absent for all deps in this probe."
+  }
+}

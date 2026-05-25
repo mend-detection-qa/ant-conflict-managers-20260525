@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ivy.xml for global-strict sub-project.
+
+  Dependency graph:
+    slf4j-api:2.0.16          (direct, compile) - no commons-lang3 dependency
+    commons-lang3:3.12.0      (direct, compile)
+    commons-lang3:3.4         (direct, test — same module, DIFFERENT version)
+
+  With defaultConflictManager="strict":
+    Ivy sees two requests for org.apache.commons:commons-lang3 at incompatible
+    versions (3.12.0 from compile conf and 3.4 from test conf). Strict fires
+    immediately: "org.apache.commons#commons-lang3;3.12.0 (needed by
+    [mend-detection-qa#global-strict;1.0.0]) conflicts with
+    org.apache.commons#commons-lang3;3.4".
+
+  With defaultConflictManager="latest-revision" (what Mend may assume):
+    Would silently pick 3.12.0 — no failure, wrong tree.
+
+  The conflict is intentional. failonerror="false" in build.xml ensures Ivy
+  still writes a (partial) ResolveReport that Mend's IvyDependenciesAntTask
+  reads. The expected-tree.json records the strict failure in warnings[].
+
+  Additional dep (junit:4.13.2) uses test conf independently — it has no
+  commons-lang3 dependency, so it resolves cleanly, demonstrating that strict
+  failures are per-module, not global.
+-->
+<ivy-module version="2.0">
+    <info organisation="mend-detection-qa"
+          module="global-strict"
+          revision="1.0.0"
+          status="integration"/>
+
+    <configurations>
+        <conf name="compile" description="Compile-time dependencies"/>
+        <conf name="test" extends="compile" description="Test-time dependencies"/>
+    </configurations>
+
+    <dependencies>
+        <!-- Resolves cleanly — no commons-lang3 transitive -->
+        <dependency org="org.slf4j"
+                    name="slf4j-api"
+                    rev="2.0.16"
+                    conf="compile->default"/>
+
+        <!-- Version A of commons-lang3 — requested by compile conf -->
+        <dependency org="org.apache.commons"
+                    name="commons-lang3"
+                    rev="3.12.0"
+                    conf="compile->default"/>
+
+        <!--
+          Version B of commons-lang3 — requested by test conf.
+          Same module, DIFFERENT version. With strict, this triggers
+          ConflictManager failure: 3.12.0 vs 3.4 cannot be reconciled.
+        -->
+        <dependency org="org.apache.commons"
+                    name="commons-lang3"
+                    rev="3.4"
+                    conf="test->default"/>
+
+        <!-- Clean test dep — no commons-lang3 dependency -->
+        <dependency org="junit"
+                    name="junit"
+                    rev="4.13.2"
+                    conf="test->default"/>
+    </dependencies>
+</ivy-module>

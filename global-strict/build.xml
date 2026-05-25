@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  build.xml for global-strict sub-project.
+
+  failonerror="false" on ivy:resolve is intentional: the strict conflict
+  manager will report a ConflictManager error for commons-lang3 (two versions
+  requested). Ivy still produces a ResolveReport with the conflict recorded.
+  Mend's IvyDependenciesAntTask reads that report — the expected-tree.json
+  captures the warning. A hard build failure here would prevent Mend from
+  scanning the sub-project at all.
+-->
+<project name="global-strict" default="resolve" basedir="."
+         xmlns:ivy="antlib:org.apache.ivy.ant">
+
+    <property name="ivy.settings.file" value="${basedir}/ivysettings.xml"/>
+
+    <taskdef resource="org/apache/ivy/ant/antlib.xml"
+             uri="antlib:org.apache.ivy.ant"
+             classpath="${ivy.jar.path}"/>
+
+    <target name="resolve" description="Resolve dependencies via Ivy">
+        <ivy:settings file="${ivy.settings.file}"/>
+        <ivy:resolve file="${basedir}/ivy.xml"
+                     conf="compile,test"
+                     failonerror="false"
+                     log="download-only"/>
+        <ivy:cachepath pathid="compile.classpath"
+                       conf="compile"
+                       failonerror="false"/>
+    </target>
+
+</project>

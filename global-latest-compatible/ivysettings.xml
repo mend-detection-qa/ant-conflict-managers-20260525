@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ivysettings.xml for global-latest-compatible sub-project.
+
+  Pattern: conflict-manager-latest-compatible (#16)
+
+  defaultConflictManager="latest-compatible":
+    When multiple paths request the same module at different version
+    constraints, Ivy picks the HIGHEST version that is compatible with
+    ALL constraints — not simply the highest available version.
+
+  Contrast with latest-revision (Ivy default):
+    latest-revision picks the highest available version regardless of
+    whether other requestors declared bounded ranges. It would pick
+    commons-io:2.22.0 here, violating the [2.6,2.12) constraint.
+
+  Divergence demonstrated in this probe:
+    Constraint A: [2.6,2.12)  — upper-bounded; excludes 2.12 and above
+    Constraint B: [2.0,)      — lower-bounded; any version >= 2.0
+
+    latest-revision winner:    2.22.0  (highest available, violates constraint A)
+    latest-compatible winner:  2.11.0  (highest satisfying BOTH constraints)
+
+  Maven Central confirms commons-io:2.11.0 exists (it does — see version list).
+  The probe encodes both winners in expected-tree.json warnings[] so the
+  downstream comparator can verify Mend honours latest-compatible correctly.
+-->
+<ivysettings>
+    <settings defaultConflictManager="latest-compatible"/>
+
+    <resolvers>
+        <ibiblio name="central" m2compatible="true"/>
+    </resolvers>
+</ivysettings>

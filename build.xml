@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Umbrella build.xml — invokes all three sub-project resolve targets via <subant>.
+  No compile or test targets: this probe is for dependency resolution only.
+-->
+<project name="ant-conflict-managers" default="resolve-all" basedir=".">
+
+    <target name="resolve-all"
+            description="Resolve dependencies in all three sub-projects">
+        <subant target="resolve" failonerror="false">
+            <filelist dir="${basedir}">
+                <file name="per-module-override/build.xml"/>
+                <file name="global-strict/build.xml"/>
+                <file name="global-latest-compatible/build.xml"/>
+            </filelist>
+        </subant>
+    </target>
+
+</project>

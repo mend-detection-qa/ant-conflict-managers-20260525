@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ivysettings.xml for global-strict sub-project.
+
+  Patterns: conflict-manager-strict (#15), complex-version-conflict strict-half (#21)
+
+  defaultConflictManager="strict" means ANY module requested at two different
+  versions will cause an immediate ConflictManager error. There is no silent
+  winner-picking — Ivy fails unless all paths agree on the same revision.
+
+  The ivy.xml deliberately requests commons-lang3 at two non-overlapping
+  fixed revisions (via two configurations that each get a different pin),
+  guaranteeing a strict failure. The failure is recorded in warnings[] in
+  expected-tree.json, not treated as a hard build break for the probe
+  (failonerror="false" in build.xml).
+-->
+<ivysettings>
+    <settings defaultConflictManager="strict"/>
+
+    <resolvers>
+        <ibiblio name="central" m2compatible="true"/>
+    </resolvers>
+</ivysettings>

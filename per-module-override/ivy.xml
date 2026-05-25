@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ivy.xml for per-module-override sub-project.
+
+  Dependency graph:
+    httpclient:4.5.14
+      -> commons-logging:1.2        (direct dep in httpclient POM)
+      -> httpcore:4.4.16
+      -> commons-codec:1.15
+
+    commons-beanutils:1.8.3
+      -> commons-logging:1.1.1      (direct dep in commons-beanutils 1.8.3 POM)
+      -> commons-collections:3.2.2
+
+  Conflict on commons-logging:
+    - httpclient path requests 1.2
+    - commons-beanutils path requests 1.1.1
+    - With latest-revision (default): would silently pick 1.2
+    - With per-module strict on commons-logging: fires a ConflictManager failure
+
+  The <override> block below is deliberately absent — this probe tests the
+  <conflict-managers> per-module mechanism, not <override>. The strict failure
+  is the expected outcome, recorded in warnings[] in expected-tree.json.
+-->
+<ivy-module version="2.0">
+    <info organisation="mend-detection-qa"
+          module="per-module-override"
+          revision="1.0.0"
+          status="integration"/>
+
+    <configurations>
+        <conf name="compile" description="Compile-time dependencies"/>
+        <conf name="runtime" extends="compile" description="Runtime dependencies"/>
+    </configurations>
+
+    <dependencies>
+        <!--
+          Path 1: httpclient transitively brings commons-logging:1.2
+        -->
+        <dependency org="org.apache.httpcomponents"
+                    name="httpclient"
+                    rev="4.5.14"
+                    conf="compile->default"/>
+
+        <!--
+          Path 2: commons-beanutils transitively brings commons-logging:1.1.1
+          (commons-beanutils 1.8.3 POM declares commons-logging:1.1.1 as a dependency)
+        -->
+        <dependency org="commons-beanutils"
+                    name="commons-beanutils"
+                    rev="1.8.3"
+                    conf="compile->default"/>
+    </dependencies>
+</ivy-module>

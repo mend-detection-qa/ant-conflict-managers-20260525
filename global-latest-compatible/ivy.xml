@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ivy.xml for global-latest-compatible sub-project.
+
+  Dependency graph creates a version-range conflict on commons-io:
+
+    (compile conf) dep-a declares commons-io [2.6,2.12)
+      — "I need commons-io at or above 2.6 but strictly below 2.12"
+
+    (runtime conf) dep-b declares commons-io [2.0,)
+      — "I need any commons-io at 2.0 or above"
+
+  The two range constraints produce different winners depending on the
+  conflict manager:
+
+    latest-revision:    2.22.0  (highest available; violates [2.6,2.12))
+    latest-compatible:  2.11.0  (highest satisfying BOTH ranges simultaneously)
+
+  Implementation note: Ivy allows declaring the same module twice at
+  different revision ranges when the declarations come from different
+  confs or when they're transitive. Here we use two confs (compile,
+  runtime) each requesting commons-io at a different range. Ivy's
+  conflict resolution fires across all confs simultaneously.
+
+  A third dep (guava:33.3.1-jre via compile) is included to show that
+  latest-compatible only affects the conflicting module — guava resolves
+  normally via its single fixed revision.
+-->
+<ivy-module version="2.0">
+    <info organisation="mend-detection-qa"
+          module="global-latest-compatible"
+          revision="1.0.0"
+          status="integration"/>
+
+    <configurations>
+        <conf name="compile" description="Compile-time dependencies"/>
+        <conf name="runtime" extends="compile" description="Runtime dependencies"/>
+    </configurations>
+
+    <dependencies>
+        <!--
+          Constraint A: upper-bounded range on commons-io.
+          [2.6,2.12) means >= 2.6 AND < 2.12.
+          This excludes 2.12.0, 2.13.0, ..., 2.22.0.
+          With latest-compatible, the winner must satisfy this constraint.
+        -->
+        <dependency org="commons-io"
+                    name="commons-io"
+                    rev="[2.6,2.12)"
+                    conf="compile->default"/>
+
+        <!--
+          Constraint B: open-ended lower-bound range on commons-io.
+          [2.0,) means any version >= 2.0. By itself, latest-revision
+          would pick 2.22.0. Combined with constraint A under
+          latest-compatible, the winner is 2.11.0.
+        -->
+        <dependency org="commons-io"
+                    name="commons-io"
+                    rev="[2.0,)"
+                    conf="runtime->default"/>
+
+        <!--
+          Unrelated dep to confirm latest-compatible doesn't affect
+          single-version modules — guava resolves to exactly 33.3.1-jre.
+        -->
+        <dependency org="com.google.guava"
+                    name="guava"
+                    rev="33.3.1-jre"
+                    conf="compile->default"/>
+    </dependencies>
+</ivy-module>
