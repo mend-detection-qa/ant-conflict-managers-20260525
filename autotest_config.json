@@ -1,0 +1,134 @@
+{
+  "_comment": "Autotest config for ant-conflict-managers-20260525. Three Ant+Ivy sub-projects exercising per-module strict override (catalog E1), global strict conflict manager (#15), and global latest-compatible conflict manager (#16). Detection signals: (1) commons-logging:1.2 emitted with the per-module strict override active; (2) commons-lang3 strict-failure in global-strict sub-project; (3) commons-io:2.11.0 (not 2.22.0) in latest-compatible sub-project. Bucket A — java pinned to 17 in .whitesource. Ant has no EUA support; vulnerability analysis absent for all deps.",
+  "_probe_id": "ant-conflict-managers-20260525-134952",
+  "_coverage_plan": "COVERAGE-PLAN.md Project #1 (P0) — first Ant probe, seeds the Ant test surface",
+  "_catalog_ids": ["E1", "#15", "#16", "#21"],
+  "_warnings_follow_up": "The expected-tree.json carries warnings[] entries for strict-failure and latest-compatible-divergence (per-module-override, global-strict, global-latest-compatible). The autotest framework does not currently support asserting on warnings[] content. If regression detection for E1/#15/#16 via expected_dependency_pairs (commons-logging:1.2, commons-io:2.11.0) is insufficient, add a framework-level warnings validator as a follow-up.",
+  "description": "Autotest configuration file for dependency tree detection validation",
+  "version": 1.8,
+  "base_config": {
+    "branch": null,
+
+    "validate_scan_output": true,
+    "scan_output": {
+      "security_scan_report_conclusion": "success",
+      "total_libs_scanned": {"gte": 15},
+      "expected_messages": []
+    },
+
+    "validate_dependency_tree": true,
+    "dependency_tree": {
+      "check_dependency_tree_detection_status": true,
+      "check_update_request_sca_results": true,
+      "check_system_paths": false,
+
+      "expected_total_dependencies_number": {"gte": 16},
+      "expected_direct_dependencies_number": {"gte": 6},
+      "expected_transitive_dependencies_number": {"gte": 8},
+
+      "direct_dependencies_names_list": {
+        "eq": [
+          "httpclient",
+          "commons-beanutils",
+          "slf4j-api",
+          "commons-lang3",
+          "junit",
+          "commons-io",
+          "guava"
+        ]
+      },
+
+      "transitive_dependencies_names_list": {
+        "contains": [
+          "commons-logging",
+          "httpcore",
+          "commons-codec",
+          "commons-collections",
+          "hamcrest-core",
+          "failureaccess",
+          "listenablefuture",
+          "jsr305",
+          "checker-qual",
+          "error_prone_annotations",
+          "j2objc-annotations"
+        ]
+      },
+
+      "expected_package_managers": {
+        "contains": ["ant"]
+      },
+
+      "expected_dependency_pairs": [
+        {
+          "artifactId": "commons-logging",
+          "version": "1.2",
+          "groupId": "commons-logging",
+          "_note": "Regression signal E1: per-module strict override must select 1.2 over 1.1.1"
+        },
+        {
+          "artifactId": "commons-io",
+          "version": "2.11.0",
+          "groupId": "commons-io",
+          "_note": "Regression signal #16: latest-compatible must pick 2.11.0; latest-revision would pick 2.22.0"
+        },
+        {
+          "artifactId": "httpcore",
+          "version": "4.4.16",
+          "groupId": "org.apache.httpcomponents"
+        },
+        {
+          "artifactId": "commons-codec",
+          "version": "1.15",
+          "groupId": "commons-codec"
+        },
+        {
+          "artifactId": "hamcrest-core",
+          "version": "1.3",
+          "groupId": "org.hamcrest"
+        }
+      ],
+
+      "validate_agent_versions": false,
+      "expected_agent_version": "",
+      "expected_plugin_version": "",
+      "validate_mend_tags": false,
+      "validate_checksums": false,
+      "checksums_config": {
+        "check_sha1_not_empty": false,
+        "check_sha1_format": false,
+        "check_sha1_consistency": false,
+        "check_checksums_by_formula": false,
+        "expected_dependency_checksums": []
+      }
+    },
+
+    "validate_vulnerabilities_table": false,
+    "vulnerabilities_table": {
+      "check_vulnerabilities_table_structure": true,
+      "expected_total_vulnerabilities_number": {"gte": 0},
+      "vulnerabilities_ids_list": {"contains": []},
+      "vulnerabilities_names_list": {"contains": []}
+    },
+
+    "validate_scanner_logs": false,
+    "logs": {
+      "check_scanner_logs": true,
+      "detect_secrets": false,
+      "check_external_logs": false,
+      "expected_log_lines": []
+    },
+
+    "validate_reachability": false,
+    "reachability": {
+      "check_reachability_status": false
+    },
+
+    "validate_project_contributors": false,
+    "contributors": {
+      "check_contributors_structure": true,
+      "expected_contributors": [],
+      "expected_min_commits": {"gte": 1},
+      "expected_total_contributors": {}
+    }
+  }
+}
