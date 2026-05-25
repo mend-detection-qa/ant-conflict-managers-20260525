@@ -1,5 +1,6 @@
 {
   "scanSettings": {
+    "configMode": "LOCAL",
     "versioning": {
        "java": "17.0.19+10"
     }
